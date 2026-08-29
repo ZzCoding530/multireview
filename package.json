@@ -1,0 +1,16 @@
+{
+  "name": "mini-modguard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "mini-modguard 多模态内容审核平台",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace server",
+    "dev:client": "npm run dev --workspace client",
+    "build": "npm run build --workspace server && npm run build --workspace client",
+    "test": "npm run test --workspace server && npm run test --workspace client"
+  }
+}
