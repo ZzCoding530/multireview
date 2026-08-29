@@ -70,6 +70,49 @@ CREATE TABLE IF NOT EXISTS appeals (
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS training_samples (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  content TEXT NOT NULL,
+  label TEXT NOT NULL,
+  source TEXT NOT NULL DEFAULT 'appeal',
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS model_versions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'candidate',
+  traffic_percent INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS distill_jobs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  teacher_model TEXT NOT NULL,
+  student_model TEXT NOT NULL,
+  sample_count INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'pending',
+  metrics TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS quality_checks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  record_id INTEGER NOT NULL,
+  reviewer TEXT,
+  result TEXT,
+  note TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS eval_runs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  eval_type TEXT NOT NULL,
+  metrics TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `;
 
 function seed(db: DatabaseSync): void {
@@ -114,6 +157,15 @@ function seed(db: DatabaseSync): void {
     );
     insert.run('general', 0.2, 0.8); // 通用业务线
     insert.run('youth', 0.1, 0.5); // 青少年模式更严
+  }
+
+  const modelVersionCount = (db.prepare('SELECT COUNT(*) AS c FROM model_versions').get() as { c: number }).c;
+  if (modelVersionCount === 0) {
+    const insert = db.prepare(
+      'INSERT INTO model_versions (name, provider, status, traffic_percent) VALUES (?, ?, ?, ?)',
+    );
+    insert.run('deepseek-v4-flash', 'deepseek', 'active', 100);
+    insert.run('mock-small-model-v1', 'mock-small', 'candidate', 0);
   }
 }
 

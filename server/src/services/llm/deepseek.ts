@@ -6,12 +6,11 @@ export interface DeepSeekResponse {
   content: string;
   hitTokens: number;
   missTokens: number;
+  outputTokens: number;
 }
 
-function buildSystemPrompt(): string {
-  const categoryLines = CATEGORIES.map(
-    (c) => `- ${c}：${CATEGORY_LABELS[c]}`,
-  ).join('\n');
+export function buildSystemPrompt(): string {
+  const categoryLines = CATEGORIES.map((c) => `- ${c}：${CATEGORY_LABELS[c]}`).join('\n');
   return `你是内容审核精审模型，负责对规则引擎判定为「存疑」的文本做语义精审，判断其是否违规。请严格按 JSON 格式输出结果（json）。
 
 合法违规类别（category 只能取下列值之一，不得编造其他类别）：
@@ -27,13 +26,16 @@ ${categoryLines}
 3. 对反讽、隐喻、黑话、谐音变体要结合上下文判断，宁可转人审也不漏放。`;
 }
 
-/** 调用 DeepSeek 完成精审，返回原始 JSON 文本与缓存命中统计 */
-export async function callDeepSeek(userContent: string): Promise<DeepSeekResponse> {
+/** 调用 DeepSeek 完成精审，返回原始 JSON 文本与 token/缓存统计 */
+export async function callDeepSeek(
+  userContent: string,
+  systemPrompt?: string,
+): Promise<DeepSeekResponse> {
   const body = {
     model: config.deepseek.model,
     messages: [
-      { role: 'system', content: buildSystemPrompt() },
-      { role: 'user', content: `待审核文本：\n${userContent}` },
+      { role: 'system', content: systemPrompt ?? buildSystemPrompt() },
+      { role: 'user', content: userContent },
     ],
     response_format: { type: 'json_object' },
     temperature: 0,
@@ -60,13 +62,18 @@ export async function callDeepSeek(userContent: string): Promise<DeepSeekRespons
 
     const data = (await res.json()) as {
       choices?: Array<{ message?: { content?: string } }>;
-      usage?: { prompt_cache_hit_tokens?: number; prompt_cache_miss_tokens?: number };
+      usage?: {
+        prompt_cache_hit_tokens?: number;
+        prompt_cache_miss_tokens?: number;
+        completion_tokens?: number;
+      };
     };
 
     return {
       content: data.choices?.[0]?.message?.content ?? '',
       hitTokens: data.usage?.prompt_cache_hit_tokens ?? 0,
       missTokens: data.usage?.prompt_cache_miss_tokens ?? 0,
+      outputTokens: data.usage?.completion_tokens ?? 0,
     };
   } finally {
     clearTimeout(timer);

@@ -1,7 +1,9 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
+import Appeals from './pages/Appeals';
 import Login from './pages/Login';
+import ModelVersions from './pages/ModelVersions';
 import Records from './pages/Records';
 import Review from './pages/Review';
 import Rules from './pages/Rules';
@@ -28,7 +30,9 @@ export default function App() {
       >
         <Route index element={<Submit />} />
         <Route path="review" element={<Review />} />
+        <Route path="appeals" element={<Appeals />} />
         <Route path="rules" element={<Rules />} />
+        <Route path="models" element={<ModelVersions />} />
         <Route path="stats" element={<Stats />} />
         <Route path="records" element={<Records />} />
       </Route>

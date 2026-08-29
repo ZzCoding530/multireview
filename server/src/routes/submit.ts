@@ -36,7 +36,7 @@ submitRouter.post('/text', async (req, res) => {
     return;
   }
   try {
-    const { detection, decision, llmReview, llmUsed } = await moderateText(
+    const { detection, decision, llmReview, llmUsed, modelName } = await moderateText(
       content,
       String(businessLine),
     );
@@ -51,7 +51,7 @@ submitRouter.post('/text', async (req, res) => {
       decision,
       businessLine: String(businessLine),
     });
-    res.json({ record, detection: detectionWithLlm, decision, policy, llmReview, llmUsed });
+    res.json({ record, detection: detectionWithLlm, decision, policy, llmReview, llmUsed, modelName });
   } catch (err) {
     res.status(502).json({ error: `审核服务异常：${(err as Error)?.message ?? ''}` });
   }

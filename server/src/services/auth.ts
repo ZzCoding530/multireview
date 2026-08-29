@@ -38,15 +38,13 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
 
 export function requireRole(role: AuthUser['role']) {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
-    if (!req.user) {
-      res.status(401).json({ error: '未登录' });
-      return;
-    }
-    // admin 拥有最高权限
-    if (req.user.role !== role && req.user.role !== 'admin') {
-      res.status(403).json({ error: '权限不足' });
-      return;
-    }
-    next();
+    // 先鉴权（设置 req.user），再校验角色
+    authMiddleware(req, res, () => {
+      if (!req.user || (req.user.role !== role && req.user.role !== 'admin')) {
+        res.status(403).json({ error: '权限不足' });
+        return;
+      }
+      next();
+    });
   };
 }

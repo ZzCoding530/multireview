@@ -4,7 +4,9 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 const nav = [
   { to: '/', label: '内容提交', icon: '📤', end: true },
   { to: '/review', label: '人审工作台', icon: '🧑‍⚖️' },
+  { to: '/appeals', label: '申诉与回流', icon: '🔁' },
   { to: '/rules', label: '策略管理', icon: '⚙️' },
+  { to: '/models', label: '模型版本', icon: '🚦' },
   { to: '/stats', label: '统计看板', icon: '📊' },
   { to: '/records', label: '审核记录', icon: '🗂️' },
 ];

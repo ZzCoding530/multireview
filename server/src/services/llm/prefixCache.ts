@@ -8,10 +8,17 @@ export interface PrefixCacheStats {
   misses: number;
   hitTokens: number;
   missTokens: number;
+  outputTokens: number;
 }
 
 export class PrefixCache {
-  private stats: PrefixCacheStats = { hits: 0, misses: 0, hitTokens: 0, missTokens: 0 };
+  private stats: PrefixCacheStats = {
+    hits: 0,
+    misses: 0,
+    hitTokens: 0,
+    missTokens: 0,
+    outputTokens: 0,
+  };
   private prefix: string;
 
   constructor(prefix: string) {
@@ -22,11 +29,12 @@ export class PrefixCache {
     return this.prefix;
   }
 
-  record(hitTokens: number, missTokens: number): void {
+  record(hitTokens: number, missTokens: number, outputTokens: number): void {
     if (hitTokens > 0) this.stats.hits += 1;
     else this.stats.misses += 1;
     this.stats.hitTokens += hitTokens;
     this.stats.missTokens += missTokens;
+    this.stats.outputTokens += outputTokens;
   }
 
   getStats(): PrefixCacheStats {
